@@ -1,8 +1,10 @@
 package com.spring.batch.lab.chap13.domain;
 
 import com.spring.batch.lab.chap13.CustomerUpdate;
+import lombok.Getter;
 import org.springframework.util.StringUtils;
 
+@Getter
 public class CustomerNameUpdate extends CustomerUpdate {
 
     private final String firstName;
