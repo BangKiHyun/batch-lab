@@ -44,7 +44,6 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-@EnableBatchProcessing
 @Configuration
 @RequiredArgsConstructor
 public class ImportJobConfiguration {
