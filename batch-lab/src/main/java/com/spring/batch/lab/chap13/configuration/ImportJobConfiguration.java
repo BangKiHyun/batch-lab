@@ -10,7 +10,6 @@ import com.spring.batch.lab.chap13.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -51,10 +50,11 @@ public class ImportJobConfiguration {
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
+    private static final String JOB_NAME = "importJob";
 
-    @Bean
+    @Bean(name = JOB_NAME)
     public Job job() throws Exception {
-        return this.jobBuilderFactory.get("importJob")
+        return this.jobBuilderFactory.get(JOB_NAME)
                 .incrementer(new RunIdIncrementer())
                 .start(importCustomerUpdates())
                 .next(importTransactions())
@@ -109,22 +109,24 @@ public class ImportJobConfiguration {
     public FieldSetMapper<CustomerUpdate> customerUpdateFieldSetMapper() {
         return fieldSet -> {
             switch (fieldSet.readInt("recordId")) {
-                case 1: return new CustomerNameUpdate(fieldSet.readLong("customerId"),
-                        fieldSet.readString("firstName"),
-                        fieldSet.readString("middleName"),
-                        fieldSet.readString("lastName"));
-                case 2: return new CustomerAddressUpdate(fieldSet.readLong("customerId"),
-                        fieldSet.readString("address1"),
-                        fieldSet.readString("address2"),
-                        fieldSet.readString("city"),
-                        fieldSet.readString("state"),
-                        fieldSet.readString("postalCode"));
+                case 1:
+                    return new CustomerNameUpdate(fieldSet.readLong("customerId"),
+                            fieldSet.readString("firstName"),
+                            fieldSet.readString("middleName"),
+                            fieldSet.readString("lastName"));
+                case 2:
+                    return new CustomerAddressUpdate(fieldSet.readLong("customerId"),
+                            fieldSet.readString("address1"),
+                            fieldSet.readString("address2"),
+                            fieldSet.readString("city"),
+                            fieldSet.readString("state"),
+                            fieldSet.readString("postalCode"));
                 case 3:
                     String rawPreference = fieldSet.readString("notificationPreference");
 
                     Integer notificationPreference = null;
 
-                    if(StringUtils.hasText(rawPreference)) {
+                    if (StringUtils.hasText(rawPreference)) {
                         notificationPreference = Integer.parseInt(rawPreference);
                     }
 
@@ -134,7 +136,8 @@ public class ImportJobConfiguration {
                             fieldSet.readString("cellPhone"),
                             fieldSet.readString("workPhone"),
                             notificationPreference);
-                default: throw new IllegalArgumentException("Invalid record type was found:" + fieldSet.readInt("recordId"));
+                default:
+                    throw new IllegalArgumentException("Invalid record type was found:" + fieldSet.readInt("recordId"));
             }
         };
     }
