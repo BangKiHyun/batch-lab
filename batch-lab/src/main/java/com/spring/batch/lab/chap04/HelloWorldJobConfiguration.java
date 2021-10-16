@@ -6,6 +6,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.CompositeJobParametersValidator;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ public class HelloWorldJobConfiguration {
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
+    private final CompositeJobParametersValidator validator;
 
     public static final String JOB_NAME = "helloJob";
     public static final String STEP_NAME = "helloStep";
@@ -26,13 +28,14 @@ public class HelloWorldJobConfiguration {
     public Job job() {
         return this.jobBuilderFactory.get(JOB_NAME)
                 .start(step1())
+                .validator(validator)
                 .build();
     }
 
     @Bean(name = STEP_NAME + "FIRST")
     public Step step1() {
         return this.stepBuilderFactory.get(STEP_NAME)
-                .tasklet(helloWorldTasklet())
+                .tasklet(helloWorldTasklet(null, null))
                 .build();
     }
 
@@ -51,9 +54,12 @@ public class HelloWorldJobConfiguration {
     // late binding
     @StepScope
     @Bean
-    public Tasklet helloWorldTasklet(@Value("#{jobParameters['name']}") String name) {
+    public Tasklet helloWorldTasklet(@Value("#{jobParameters['fileName']}") String fileName,
+                                     @Value("#{jobParameters['name']}") String name) {
         return ((contribution, chunkContext) -> {
             System.out.println(String.format("Hello, %s!", name));
+
+            System.out.println(String.format("fileName = %s", fileName));
             return RepeatStatus.FINISHED;
         });
     }
