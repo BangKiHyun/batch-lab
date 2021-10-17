@@ -1,5 +1,6 @@
 package com.spring.batch.lab.chap04;
 
+import com.spring.batch.lab.chap04.incrementer.DailyJobTimestamper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -7,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.JobBuilderFactory
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.CompositeJobParametersValidator;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,8 @@ public class HelloWorldJobConfiguration {
         return this.jobBuilderFactory.get(JOB_NAME)
                 .start(step1())
                 .validator(validator)
+                .incrementer(new RunIdIncrementer())
+                .incrementer(new DailyJobTimestamper())
                 .build();
     }
 
