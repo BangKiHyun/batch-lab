@@ -10,10 +10,12 @@ import java.util.Date;
 @Component
 public class DailyJobTimestamper implements JobParametersIncrementer {
 
+    private static final String TIMESTAMP_KEY = "currentDate";
+
     @Override
     public JobParameters getNext(JobParameters parameters) {
         return new JobParametersBuilder(parameters)
-                .addDate("currentDate", new Date())
+                .addDate(TIMESTAMP_KEY, new Date())
                 .toJobParameters();
     }
 }
