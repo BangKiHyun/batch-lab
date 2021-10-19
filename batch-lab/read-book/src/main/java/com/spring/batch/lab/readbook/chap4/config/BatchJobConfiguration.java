@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecutionListener;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.listener.ExecutionContextPromotionListener;
@@ -13,13 +12,12 @@ import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@EnableBatchProcessing
 @Configuration
 @RequiredArgsConstructor
 public class BatchJobConfiguration {
 
-    private static final String JOB_NAME = "chap4_job";
-    private static final String STEP_NAME = "-chap4_step";
+    public static final String JOB_NAME = "chap4_job";
+    public static final String STEP_NAME = "-chap4_step";
 
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;

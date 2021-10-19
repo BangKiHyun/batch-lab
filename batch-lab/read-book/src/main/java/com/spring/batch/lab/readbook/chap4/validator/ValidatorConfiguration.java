@@ -22,7 +22,7 @@ public class ValidatorConfiguration {
         validator.setRequiredKeys(new String[]{"fileName"});
 
         // 필수가 아닌 파라미터
-        validator.setOptionalKeys(new String[]{"name", "run.id", "currentDate"});
+        validator.setOptionalKeys(new String[]{"name", "currentDate"});
 
         // 위에서 정의한 두 가지 파라미터 외에 변수가 전달되면 검증 실패
         // 만약에 옵션 키가 구성돼 있지 않고 필수 키만 구성돼 있다면, 필수 키를 전달하기만 하면 그 외 어떤 키를 조합하더라도 유효성 검증 통과
