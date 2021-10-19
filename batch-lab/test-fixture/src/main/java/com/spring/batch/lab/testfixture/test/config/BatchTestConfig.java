@@ -1,23 +1,16 @@
-package com.spring.batch.lab.config;
+package com.spring.batch.lab.testfixture.test.config;
 
-import com.spring.batch.lab.launcer.TestJobLauncher;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import com.spring.batch.lab.testfixture.test.TestJobLauncher;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @Configuration
-@EnableBatchProcessing
-@ComponentScan(value = {
-        "com.spring.batch.lab.chap02",
-        "com.spring.batch.lab.chap04",
-        "com.spring.batch.lab.chap13",
-})
-public class BatchConfiguration {
-
+public class BatchTestConfig {
     @Bean
     public TestJobLauncher testJobLauncher(
             ApplicationContext applicationContext,

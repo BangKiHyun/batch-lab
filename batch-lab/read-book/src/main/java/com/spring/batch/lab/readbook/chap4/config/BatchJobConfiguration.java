@@ -1,6 +1,6 @@
-package com.spring.batch.lab.chap04.config;
+package com.spring.batch.lab.readbook.chap4.config;
 
-import com.spring.batch.lab.chap04.tasklet.HelloTasklet;
+import com.spring.batch.lab.readbook.chap4.tasklet.HelloTasklet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

@@ -1,4 +1,4 @@
-package com.spring.batch.lab.launcer;
+package com.spring.batch.lab.testfixture.test;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -9,7 +9,6 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.context.ApplicationContext;
 
 public class TestJobLauncher {
-
     private final ApplicationContext applicationContext;
     private final JobRepository jobRepository;
     private final JobLauncher jobLauncher;

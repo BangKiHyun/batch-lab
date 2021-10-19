@@ -1,19 +1,16 @@
-package com.spring.batch.lab.chap04;
+package com.spring.batch.lab.readbook.chap2;
 
-import com.spring.batch.lab.BatchLabApplication;
-import com.spring.batch.lab.config.BatchConfiguration;
-import com.spring.batch.lab.launcer.TestJobLauncher;
+import com.spring.batch.lab.readbook.config.BatchConfiguration;
+import com.spring.batch.lab.readbook.test.BatchSpringTest;
+import com.spring.batch.lab.testfixture.test.TestJobLauncher;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@Import(BatchConfiguration.class)
-@SpringBootTest(classes = BatchLabApplication.class)
-class HelloWorldJobConfigurationTest {
+@BatchSpringTest
+class HelloWorldBatchConfigurationTest {
 
     @Autowired
     private TestJobLauncher jobLauncher;
@@ -25,10 +22,11 @@ class HelloWorldJobConfigurationTest {
                 .toJobParameters();
 
         //when
-        JobExecution execution = jobLauncher.launchJob(HelloWorldJobConfiguration.JOB_NAME, jobParameters);
+        JobExecution execution = jobLauncher.launchJob(HelloWorldBatchConfiguration.JOB_NAME, jobParameters);
 
         //then
         assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
     }
+
 }

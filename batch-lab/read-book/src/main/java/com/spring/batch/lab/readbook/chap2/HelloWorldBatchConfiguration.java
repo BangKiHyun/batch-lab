@@ -1,4 +1,4 @@
-package com.spring.batch.lab.chap02;
+package com.spring.batch.lab.readbook.chap2;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -13,8 +13,8 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class HelloWorldBatchConfiguration {
 
-    public static final String JOB_NAME = "job";
-    public static final String STEP_NAME = JOB_NAME + "-step1";
+    public static final String JOB_NAME = "chap1_job";
+    public static final String STEP_NAME = JOB_NAME + "chap1_step";
 
     private final JobBuilderFactory jobFactory;
     private final StepBuilderFactory stepFactory;
