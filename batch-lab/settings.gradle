@@ -1,1 +1,3 @@
 rootProject.name = 'batch-lab'
+include('test-fixture',
+        'read-book')

@@ -1,0 +1,13 @@
+plugins{
+    id "java-library"
+    id "java-test-fixtures"
+    id "maven-publish"
+}
+
+bootJar { enabled = false }
+jar { enabled = true }
+
+dependencies {
+    implementation('org.springframework.boot:spring-boot-starter-batch')
+    implementation('org.springframework.batch:spring-batch-test')
+}

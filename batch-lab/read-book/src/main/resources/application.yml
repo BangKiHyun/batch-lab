@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    include:
+      - batchdb
+    active: local
+  batch:
+    job:
+      names: ${job.name:NONE}
