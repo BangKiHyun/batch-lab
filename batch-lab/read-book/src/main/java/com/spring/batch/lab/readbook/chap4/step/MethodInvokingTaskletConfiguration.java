@@ -22,7 +22,7 @@ public class MethodInvokingTaskletConfiguration {
     @Bean(name = JOB_NAME)
     public Job job() {
         return jobBuilderFactory.get(JOB_NAME)
-                .start(methodInvokingTaskletStep())
+                .start(methodInvokingStep())
                 .build();
     }
 
