@@ -1,5 +1,6 @@
 package com.spring.batch.lab.readbook.chap4.step;
 
+import com.spring.batch.lab.readbook.chap4.step.listener.LoggingStepStartStopListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -34,16 +35,17 @@ public class ChunkJobConfiguration {
     @Bean(name = "first" + STEP_NAME)
     public Step chunkStep() {
         return this.stepBuilderFactory.get("first" + STEP_NAME)
-                .<String, String>chunk(1000)
+                .<String, String>chunk(10)
                 .reader(itemReader())
                 .writer(itemWriter())
+                .listener(new LoggingStepStartStopListener())
                 .build();
     }
 
     @Bean(name = "chunkItemReader")
     public ListItemReader<String> itemReader() {
-        final List<String> itmes = new ArrayList<>(100_000);
-        for (int idx = 0; idx < 100_000; idx++) {
+        final List<String> itmes = new ArrayList<>(1);
+        for (int idx = 0; idx < 1; idx++) {
             itmes.add(UUID.randomUUID().toString());
         }
         return new ListItemReader<>(itmes);
