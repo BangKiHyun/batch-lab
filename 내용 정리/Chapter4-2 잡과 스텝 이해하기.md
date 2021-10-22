@@ -432,3 +432,126 @@ public class RandomChunkSizePolicy implements CompletionPolicy {
 
 코드를 보면 새 청크가 시작될 때마다 청크 크기가 변하는 걸 볼 수 있다.
 
+</br >
+
+## 스텝 리스너
+
+스텝 리스너를 통해 각각 스텝과 청크의 시작과 끝에 특정 로직을 실행시킬 수 있다.
+
+### StepExecutionListener
+
+- `beforeStep` 메서드: `void` 반환
+- `afterStep` 메서드: `ExitStatus`를 반환
+  - 이 기능을 통해 잡 처리의 성공 여부를 판별할 수 있다.
+  - 예로, 파일을 가져온 후 데이터베이스에 올바른 개수의 레코드가 기록됐느지 여부를 확인하는 등 기본적인 무결성 검사를 수행할 수 있다.
+
+### ChunkListener
+
+- `beforeChunk` 메서드: `void` 반환
+- `afterChunk` 메서드: `void` 반환
+
+다음은 애노테이션을 사용해 `StepExecutionListener`를 구현한 예제다.
+
+```java
+public class LogginStepStartStopListener {
+
+    @BeforeStep
+    public void beforeStep(StepExecution stepExecution) {
+        System.out.println(stepExecution.getStepName() + "has begun!");
+    }
+
+    @AfterStep
+    public ExitStatus afterStep(StepExecution stepExecution) {
+        System.out.println(stepExecution.getStepName() + "has ended!");
+        return stepExecution.getExitStatus();
+    }
+}
+```
+
+![image](https://user-images.githubusercontent.com/43977617/138238469-6702638f-ad63-4055-8e69-ab65a0aba92d.png)
+
+결과를 보면 스텝 시작 전과 후 listener가 잘 동작된 걸 확인할 수 있다.
+
+</br >
+
+## 스텝 플로우
+
+각 스텝을 순서대로 실행시킨다면 스프링 배치는 매우 제한적으로 사용할 수 밖에 없다. 하지만 프레임워크는 잡 흐름을 커스터마이징할 수 있는 여러 가지 강력한 방법을 제공한다.
+
+### 조건 로직
+
+전이(transition)을 구성하면 스텝을 다른 순서로 실행할 수 있다.
+
+~~~java
+/**
+/ stepA가 성공이면 stepB 실행
+/ stepA가 실패면 stepC 실행
+*/
+@Bean
+public Job job() {
+	return this.jobBuilderFactory.get("job")
+				.start(stepA())
+				.on("*").to(stepB())
+				.from(stepA()).on("FAILED").to(stepC())
+				.end()
+				.build();
+}
+~~~
+
+- `on()`: 스프링 배치가 스텝이 ExitStatus를 평가해 어떤 일을 수행할지 결정할 수 있도록 구성하게 해준다.
+- `*`: 0개 이상의 문자를 일치시킨다는 것을 의미한다. 예를 들어 `*C`는 `C`, `COMPLETE`, `CORRECT`와 일치한다.
+- `?`: 1개의 문자를 일치시킨다는 것을 의미한다. 예를 들어 `?AT`는 `CAT`, `KAT`과 일치하지만 `THAT`과는 일치하지 않는다.
+
+</br >
+
+### JobExecutionDecider
+
+`JobExecutionDecider`는 다음에 무엇을 해야 할지 프로그래밍적으로 결정할 수 있는 방법을 제공한다.
+
+`JobExecutionDecider` 인터페이스는 `decide()` 메서드만 존재하고, `JobExecution`과 `StepExecution`을 파라미터로 전달받고, `FlowExecutionStatus`를 반환한다.
+
+```java
+public class RandomDecider implements JobExecutionDecider {
+
+    private Random random = new Random();
+
+    @Override
+    public FlowExecutionStatus decide(JobExecution jobExecution, StepExecution stepExecution) {
+        if (random.nextBoolean()) {
+            return new FlowExecutionStatus(FlowExecutionStatus.COMPLETED.getName());
+        } else {
+            return new FlowExecutionStatus(FlowExecutionStatus.FAILED.getName());
+        }
+    }
+}
+```
+
+</br >
+
+### 잡 종료하기
+
+먼저 잡의 종료 상태는 다음과 같다.
+
+- Completed
+  - 스프링 배치 처리가 성공적으로 종료됐음을 의미
+  - Completed로 종료되면 동일한 파라미터를 사용해 다시 실행할 수 없다.
+- Failed
+  - 잡이 성공적으로 완료되지 않았음을 의미한다.
+  - Failed 상태로 종료된 잡은 스프링 배치를 사용해 동일한 파라미터로 다시 실행할 수 있다.
+- Stopped
+  - Stopped 상태로 종료된 잡은 다시 시작할 수 있다.
+  - Stepped 상태는 잡에 오류가 발생하지 않았지만 중단된 위치에서 잡을 다시 시작할 수 있다.
+  - 스텝 사이에 사람의 개입이 필요하거나 다른 검사나 처리가 필요한 상황에 매우 유용하다.
+
+</br >
+
+### 종료와 관련된 메서드
+
+- `end()`: 스텝이 반환한 상태가 무엇이든 상관없이 잡의 상태를 Completed로 저장한다.
+- `fail()`: 잡의 상태가 Failed 상태로 종료되도록 한다.
+- `stoppedRestart()`: 잡의 상태를 Stopped로 바꾼다. 그리고, 잡을 재실행하면 처음 스탭이 아닌 `stoppedRestart()`에 정의한 스텝부터 실행된다.
+
+</br >
+
+## 플로우 외부화하기
+
