@@ -551,7 +551,3 @@ public class RandomDecider implements JobExecutionDecider {
 - `fail()`: 잡의 상태가 Failed 상태로 종료되도록 한다.
 - `stoppedRestart()`: 잡의 상태를 Stopped로 바꾼다. 그리고, 잡을 재실행하면 처음 스탭이 아닌 `stoppedRestart()`에 정의한 스텝부터 실행된다.
 
-</br >
-
-## 플로우 외부화하기
-
