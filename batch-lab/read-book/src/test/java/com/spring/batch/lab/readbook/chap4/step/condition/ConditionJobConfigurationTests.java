@@ -31,4 +31,20 @@ class ConditionJobConfigurationTests {
         //then
         assertThat(execution.getStatus()).isEqualTo(BatchStatus.STOPPED);
     }
+
+    @DisplayName("조건 로직 Stopped 상태 이후 stopAndRestart() 메서드에 지정한 스탭이 돌아가는지 확인")
+    @Test
+    public void conditionJobSuccessStepAndNextStepTest() throws Exception {
+        //given
+        final JobParameters jobParameters = new JobParametersBuilder()
+                .toJobParameters();
+
+        //when
+        final JobExecution firstExecution = jobLauncher.launchJob(ConditionJobConfiguration.JOB_NAME, jobParameters);
+        final JobExecution secondExecution = jobLauncher.launchJob(ConditionJobConfiguration.JOB_NAME, jobParameters);
+
+        //then`
+        assertThat(firstExecution.getStatus()).isEqualTo(BatchStatus.STOPPED);
+        assertThat(secondExecution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
+    }
 }

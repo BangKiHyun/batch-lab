@@ -2,6 +2,7 @@ package com.spring.batch.lab.readbook.chap4.step;
 
 import com.spring.batch.lab.readbook.test.BatchSpringTest;
 import com.spring.batch.lab.testfixture.test.TestJobLauncher;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.batch.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ class ChunkPolicyJobConfigurationTests {
     @Autowired
     private TestJobLauncher jobLauncher;
 
+    @DisplayName("청크 스텝 정적 커밋 개수 테스트")
     @Test
     public void chunkStepTest() throws Exception {
         //given
@@ -31,7 +33,6 @@ class ChunkPolicyJobConfigurationTests {
         assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
         assertThat(execution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
 
-        assertThat(stepExecutions.get(0).getReadCount()).isEqualTo(100_000);
-        assertThat(stepExecutions.get(0).getWriteCount()).isEqualTo(100_000);
+        assertThat(stepExecutions.get(0).getCommitCount()).isEqualTo(101);
     }
 }

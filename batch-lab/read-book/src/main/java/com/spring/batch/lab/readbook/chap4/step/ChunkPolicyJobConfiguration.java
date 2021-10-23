@@ -31,7 +31,8 @@ public class ChunkPolicyJobConfiguration {
     @Bean(name = JOB_NAME)
     public Job chunkPolicyJob() {
         return this.jobBuilderFactory.get(JOB_NAME)
-                .start(randomPolicyStep())
+                .start(chunkPolicyStep())
+//                .next(compositePolicyStep())
 //                .next(randomPolicyStep())
                 .build();
     }
@@ -39,7 +40,7 @@ public class ChunkPolicyJobConfiguration {
     @Bean(name = "first" + STEP_NAME)
     public Step chunkPolicyStep() {
         return this.stepBuilderFactory.get("first" + STEP_NAME)
-                .<String, String>chunk(completionPolicy())
+                .<String, String>chunk(1000)
                 .reader(itemReader())
                 .writer(itemWriter())
                 .build();
@@ -49,6 +50,15 @@ public class ChunkPolicyJobConfiguration {
     public Step randomPolicyStep() {
         return this.stepBuilderFactory.get("second" + STEP_NAME)
                 .<String, String>chunk(new RandomChunkSizePolicy())
+                .reader(itemReader())
+                .writer(itemWriter())
+                .build();
+    }
+
+    @Bean(name = "composite" + STEP_NAME)
+    public Step compositePolicyStep() {
+        return this.stepBuilderFactory.get("composite" + STEP_NAME)
+                .<String, String>chunk(completionPolicy())
                 .reader(itemReader())
                 .writer(itemWriter())
                 .build();
