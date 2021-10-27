@@ -6,3 +6,16 @@ spring:
       username: sa
       password:
       driver-class-name: org.h2.Driver
+
+---
+spring:
+  profiles: mysql
+  datasource:
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/spring_batch
+      username: root
+      password:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+  batch:
+    jdbc:
+      initialize-schema: never
