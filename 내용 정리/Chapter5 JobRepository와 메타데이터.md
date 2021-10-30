@@ -115,3 +115,26 @@
 | SHORT_CONTEXT      | 트림 처리된(trimmed) SERIALIZED_CONTEXT |
 | SERIALIZED_CONTEXT | 직렬화된 ExecutionContext               |
 
+</br >
+
+## BatchConfigurer 인터페이스
+
+`BatchConfigurer` 인터페이스는 스프링 배치 인프라스트럭처 컴포넌트의 구성을 커스터마이징하는 데 사용되는 전략 인터페이스이다.
+
+- `@EnableBatchProcessing` 애너테이션을 적용하면 스프링 배치는 `BatchConfigurer` 인터페이스를 사용해 프레임워크에서 사용되는 각 인프라스트럭처 컴포넌트의 인스턴스를 얻는다.
+- 먼저 `BatchConfigurer` 구현체에서 빈을 생성한다.
+- 그다음 `SimpleBatchConfiguration`에서 스프링의 `ApplicationContext`에 생성한 빈을 등록한다.
+
+**여기서 노출되는 컴포넌트의 커스터마이징이 필요하다면 일반적으로 `BatchConfigurer`에서 커스터마이징하면 된다.**
+
+![image](https://user-images.githubusercontent.com/43977617/139520156-3a9a7172-9805-4ef7-9a67-3489cc174f7c.png)
+
+- `PlatformTransactionManager`: 프레임워크가 제공하는 모든 트랜잭션 관리 시에 스프링 배치가 사용되는 컴포넌트
+- `JobExplorer`: `JobRepository`의 데이터를 읽기 전용으로 볼 수 있는 기능을 제공
+
+대부분 이 모든 인터페이스를 직접 구현할 필요 없다.
+
+스프링 배치가 제공하는 `DefaultBatchConfigurer`를 사용하면 앞서 언급했던 컴포넌트에 대한 모든 기본 옵션이 제공된다.
+
+**일반적으로 여러 컴포넌트 중 한두 개의 구성만 재정의하므로, `DefaultBatchConfigurer`를 상속해 원하는 컴포넌트만 재정의하면 된다.**
+
