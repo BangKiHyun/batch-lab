@@ -2,9 +2,7 @@ spring:
   profiles:
     include:
       - batchdb
-    active: local
+    active: mysql
   batch:
     job:
       names: ${job.name:NONE}
-    jdbc:
-      initialize-schema: always
