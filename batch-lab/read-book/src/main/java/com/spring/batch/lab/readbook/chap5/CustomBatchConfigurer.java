@@ -25,8 +25,13 @@ public class CustomBatchConfigurer extends DefaultBatchConfigurer {
     protected JobRepository createJobRepository() throws Exception {
         JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
         factoryBean.setDatabaseType(DatabaseType.MYSQL.getProductName());
+
+        // 테이블 접두어 변경 (default: BATCH_)
         factoryBean.setTablePrefix("FOO_");
+
+        // 트랜잭션 격리 레벨 변경 (default: ISOLATION_SERIALIZED)
         factoryBean.setIsolationLevelForCreate("ISOLATION_REPEATABLE_READ");
+
         factoryBean.setDataSource(this.dataSource);
         factoryBean.afterPropertiesSet();
         return factoryBean.getObject();

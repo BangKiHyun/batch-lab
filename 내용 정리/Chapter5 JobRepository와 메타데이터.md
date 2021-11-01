@@ -138,3 +138,103 @@
 
 **일반적으로 여러 컴포넌트 중 한두 개의 구성만 재정의하므로, `DefaultBatchConfigurer`를 상속해 원하는 컴포넌트만 재정의하면 된다.**
 
+</br >
+
+## JobRepository 커스터마이징
+
+`JobRepository`를 커스터마이징 하려면 `createJobRespository()` 메서드를 재정의해야 하는데 일반적으로 ApplicationContext에 두 개 이상의 데이터 소스가 존재하는 경우 사용한다.
+
+`JobRepository`는 `JobRepositoryFactoryBean`이라는 `FactoryBean`을 통해 생성된다. 즉, `JobRepositoryFactoryBean`을 통해 `JobRepository`를 생성해주면 된다.
+
+```java
+@RequiredArgsConstructor
+public class CustomBatchConfigurer extends DefaultBatchConfigurer {
+
+    @Qualifier("repositoryDataSource")
+    private final DataSource dataSource;
+
+    @Override
+    protected JobRepository createJobRepository() throws Exception {
+        JobRepositoryFactoryBean factoryBean = new JobRepositoryFactoryBean();
+        factoryBean.setDatabaseType(DatabaseType.MYSQL.getProductName());
+
+        // 테이블 접두어 변경 (default: BATCH_)
+        factoryBean.setTablePrefix("FOO_");
+
+        // 트랜잭션 격리 레벨 변경 (default: ISOLATION_SERIALIZED)
+        factoryBean.setIsolationLevelForCreate("ISOLATION_REPEATABLE_READ");
+
+        factoryBean.setDataSource(this.dataSource);
+        factoryBean.afterPropertiesSet();
+        return factoryBean.getObject();
+    }
+}
+```
+
+위 예제에서 `repositoryDataSource`라는 데이터 소스는 자동와이어링된다. 이때 `repositoryDataSource`라는 `DataSource` 타입의 빈이 `ApplicationContext`의 어딘가에 있다고 가정한다.
+
+create 로 시작하는 이름을 가진 메서드 중 어느 것도 스프링 컨테이너가 빈 정의로 직접 호출하지 않는다. 그렇기 때문에 `InitializingBean.afterPropertiesSet()` 및 `FactoryBean.getObject()` 메서드를 호출해줘야 한다.
+
+</br >
+
+## TransactionManager 커스터마이징
+
+`BatchConfigurer.getTransactionManager()` 메서드를 호출하면 배치 처리에 사용할 목적으로 어딘가에 정의해둔 `PlatformTransacionmanager`가 명시적으로 반환된다.
+
+```java
+@RequiredArgsConstructor
+public class CustomBatchConfigurer extends DefaultBatchConfigurer {
+
+    @Qualifier("batchTransactionManager")
+    private final PlatformTransactionManager transactionManager;
+
+    @Override
+    public PlatformTransactionManager getTransactionManager() {
+        return this.transactionManager;
+    }
+}
+```
+
+위 예제에서 `TransactionManager`를 명시적으로 반환했다.
+
+그 이유는 `TransactionManager`가 생성되지 않은 경우에는 `DefaultBatachConfigurer`가 기본적으로 `setDataSource` 수정자 내에서 `DataSourceTransactionManager`를 자동으로 생성하기 때문이다.
+
+![image](https://user-images.githubusercontent.com/43977617/139659300-cb6eb8fd-3409-4b3a-a1ce-dfa7fc19e338.png)
+
+</br >
+
+## JobExplorer 커스터마이징
+
+`JobExplorer`는 배치 메타데이터를 읽기 전용으로 제공한다.
+
+기본적인 데이터 접근 계층은 `JobRepository`와 `JobExplorer` 간의 공유되는 동일한 공통 DAO 집합이다. 그러므로  `JobRepository`나  `JobExplorer` 를 커스터마이징할 때 데이터베이스로부터 데이터를 읽어들이는 데 사용되는 모든 애트리뷰트는 동일하다.
+
+```java
+@Override
+protected JobExplorer createJobExplorer() throws Exception {
+    JobExplorerFactoryBean factoryBean = new JobExplorerFactoryBean();
+    factoryBean.setDataSource(this.dataSource);
+    factoryBean.setTablePrefix("FOO_");
+    factoryBean.afterPropertiesSet();
+    return factoryBean.getObject();
+}
+```
+
+위 예제를 보면 JobRepository를 커스터마이징했던 것과 비슷한 것을 느낄 수 있다. DataSource, 테이블 접두어 등의 구성을 구성했다.
+
+> JobRepository와 JobExplorer는 동일한 데이터 저장소를 사용하므로 둘 중 하나만 커스터마이징하기보다는 둘 다 커스터마이징하는게 좋다.
+
+</br >
+
+## JobLauncher 커스터마이징
+
+`JobLauncher`는 스프링 배치 잡을 실행하는 진입점이다.
+
+스프링 부트는 기본적으로 스프링 배치가 제공하는 `SimpleJobLauncher`를 사용한다. **그러므로 스프링 부트의 기본 메커니즘으로 잡을 실행할 때 대부분 `JobLauncher`를 커스터마이징할 필요가 없다.**
+
+만약 별도의 방식으로 잡을 구동하는 방법을 외부에서 제공하려고 할 때 `SimpleJobLauncher`의 동작 방식을 커스터마이징하면 된다.
+
+![image](https://user-images.githubusercontent.com/43977617/139661064-7f964db3-49ae-48be-a10a-7962fa090c75.png)
+
+`DefaultBatchConfigurer`에는 위와같이 적혀있다. 이 메서드를 재정의해서 `JobLauncher`를 커스터마이징하면 된다.
+
