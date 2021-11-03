@@ -4,5 +4,6 @@ spring:
       - batchdb
     active: mysql
   batch:
+    initialize-schema: never
     job:
       names: ${job.name:NONE}
