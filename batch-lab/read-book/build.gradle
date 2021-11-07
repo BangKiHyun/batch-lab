@@ -7,6 +7,8 @@ dependencies {
     runtimeOnly('mysql:mysql-connector-java')
     compileOnly('org.springframework.boot:spring-boot-starter-jdbc')
 
+    compileOnly('org.springframework.boot:spring-boot-starter-web')
+
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     testImplementation('org.springframework.batch:spring-batch-test')
 
