@@ -238,3 +238,21 @@ protected JobExplorer createJobExplorer() throws Exception {
 
 `DefaultBatchConfigurer`에는 위와같이 적혀있다. 이 메서드를 재정의해서 `JobLauncher`를 커스터마이징하면 된다.
 
+</br >
+
+## 잡 메타데이터 사용하기
+
+스프링 배치가 제공하는 메타데이터에 접근하는 주된 방식은 `JobExplorer`를 사용하는 것이다.
+
+### JobExplorer
+
+`JobExplorer` 인터페이스는 `JobRepository`에 있는 이력 데이터나 최신 데이터에 접근하는 시작점이다.
+
+다음 그림을 봐보자.
+
+![image](https://user-images.githubusercontent.com/43977617/139665036-ecea155b-df92-4362-b8cb-eb36e523cb42.png)
+
+이 그림을 보면 대부분의 배치 프레임워크 컴포넌트가 `JobRepository`를 사용해 잡 실행과 관련해 저장된 정보에 접근한다.
+
+하지만 **`JobExplorer`는 데이터베이스에 직접 접근한다.**
+
