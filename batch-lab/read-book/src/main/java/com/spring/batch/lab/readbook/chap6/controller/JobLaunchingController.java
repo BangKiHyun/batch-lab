@@ -17,7 +17,7 @@ public class JobLaunchingController {
     private final JobLauncher jobLauncher;
     private final ApplicationContext context;
 
-    @PostMapping("/run")
+    @PostMapping("/job/run")
     public ExitStatus runJob(@RequestBody JobLauncherRequest request) throws Exception {
         Job job = this.context.getBean(request.getName(), Job.class);
         return this.jobLauncher.run(job, request.getJobParameters())

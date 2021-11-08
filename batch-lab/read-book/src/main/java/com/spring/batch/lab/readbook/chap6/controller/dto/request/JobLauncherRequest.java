@@ -14,6 +14,11 @@ public class JobLauncherRequest {
     private String name;
     private Properties jobParameters;
 
+    public JobLauncherRequest(String name, Properties jobParameters) {
+        this.name = name;
+        this.jobParameters = jobParameters;
+    }
+
     public String getName() {
         return this.name;
     }
