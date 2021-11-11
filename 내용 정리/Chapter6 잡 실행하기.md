@@ -116,5 +116,104 @@ public class JobLaunchingController {
 - 또한 이 실행이 재시작인지 여부를 판단하고 `JobParameters`를 적절하게 처리한다.
 - 만약 위의 일들에 해당되지 않으면 아무것도 변경되지 않는다.
 
+</br >
+
+## 쿼츠를 사용해 스케줄링하기
+
+### 쿼츠 스케줄러 컴포넌트
+
+- 스케줄러(Scheduler)
+  - 스케줄러는 `SchedulerFactory`를 통해 가져올 수 있으며 `JobDetails` 및 트리거의 저장소 기능을 한다.
+  - 연관된 트리거가 작동할 때 잡을 실행하는 역할을 한다.
+- 잡(Job)
+  - 실행할 작업의 단위
+- 트리거(Trigger)
+  - 작업 실행 시점을 정의
+
+전체적인 동작으로는 트리거가 작동돼 쿼츠에게 잡을 실행하도록 지시하면 잡의 개별 실행을 정의하는 `JobDetails` 객체가 생성된다.
+
+</br >
+
+### 쿼츠 잡
+
+다음은 일정 이벤트가 발생할 때 잡을 실행하는 메커니즘을 구현한 코드다.
+
+```java
+@Slf4j
+@RequiredArgsConstructor
+public class BatchScheduledJob extends QuartzJobBean {
+
+    @Qualifier(QuartzJobConfiguration.JOB_NAME) // 따로 정의해둔 Job
+    private final Job job;
+    private final JobExplorer jobExplorer;
+    private final JobLauncher jobLauncher;
+
+    @Override
+    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        final JobParameters jobParameters = new JobParametersBuilder(this.jobExplorer)
+                .getNextJobParameters(this.job)
+                .toJobParameters();
+
+        try {
+            this.jobLauncher.run(this.job, jobParameters);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+}
+```
+
+위 클래스는 `QuartzJobBean` 클래스를 상속했다.
+
+- `QuartzJobBean`: 쿼츠 잡 실행에 필요하지만 개발자가 수정할 필요가 거의 없는 대부분의 배치 기능을 처리한다.
+
+다음으로 `executeInternal` 메서드를 재정의해 Job을 실행시키면 된다. `executeInternal` 메서드는 스케줄링된 이벤트 메서드가 발생할 때마다 한 번씩 호출된다.
+
+</br >
+
+### 스케줄 구성 방법
+
+1. 쿼츠 잡의 빈 생성
+2. 트리거 정의
+
+스케줄을 구성하려면 이 두 가지 일을 해야 한다.
+
+~~~java
+@Configuration
+public class QuartzConfiguration {
+
+    private static final int INTERVAL_SECONDS = 5;
+    private static final int REPEAT_COUNT = 4;
+
+    @Bean
+    public JobDetail quartzJobDetails() {
+        return JobBuilder.newJob(BatchScheduledJob.class)
+                .storeDurably()
+                .build();
+    }
+
+    @Bean
+    public Trigger jobTrigger() {
+        final SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
+                .withIntervalInSeconds(INTERVAL_SECONDS) // job 실행 간격
+                .withRepeatCount(REPEAT_COUNT); // job 반복 횟수
+
+        return TriggerBuilder.newTrigger()
+                .forJob(quartzJobDetails())
+                .withSchedule(scheduleBuilder)
+                .build();
+    }
+}
+~~~
+
+- 쿼츠는 `JobBuilder`를 제공해준다. `JobBuilder`에 `BatchScheduledJob`을 전달한다.
+- 이후, 잡을 수행할 트리거가 존재하지 않더라도 쿼츠가 해당 잡 정의를 삭제하지 않도록 `JobDetail`을 생성한다.
+
+- 쿼츠의 `SimpleScheduleBuilder`를 사용해 잡의 실행 간격 및 반복 횟수를 정의했다.
+- 쿼츠의 `TriggerBuilder`를 사용해 새로운 트리거를 생성하면서 잡과 스케줄을 전달한다.
+  - 트리거는 스케줄과 JobDetail을 연관 짓는다.
+
+`JobDetail`은 실행할 쿼츠 잡 수행 시에 사용되는 메타데이터다.
+
 
 

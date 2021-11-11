@@ -10,8 +10,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     testImplementation('org.springframework.batch:spring-batch-test')
+
+    implementation group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
+    implementation group: 'org.springframework', name: 'spring-context-support', version: '3.1.2.RELEASE'
 
     implementation group: 'org.springframework', name: 'spring-oxm', version: '3.0.0.RELEASE'
 }
