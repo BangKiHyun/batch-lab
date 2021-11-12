@@ -215,5 +215,88 @@ public class QuartzConfiguration {
 
 `JobDetail`은 실행할 쿼츠 잡 수행 시에 사용되는 메타데이터다.
 
+</br >
 
+## 잡 중지하기
+
+### StepExecution.setTerminateOnly()
+
+`setTerminateOnly` 메서드는 스텝이 완료된 후 스프링 배치가 종료되도록 지시하는 플래그를 설정한다.
+
+</br >
+
+## 오류 처리
+
+### 잡 실패
+
+`StepExecution`을 사용해 잡을 중지를 하는 방식과 예외를 발생시켜 잡을 중지하는 방식에는 큰 차이가 있다.
+
+- `StepExecution`은 `ExitStatus.STOPPED` 상태로 스텝이 완료된 후에 잡이 중지된다.
+- 예외가 발생한 경우에는 스텝이 완료되지 않는다.
+  - 예외가 던져지게 되면 스텝을 통과
+  - 즉, 스텝과 잡에 `ExisStatus.FAILED` 레이블이 지정된다.
+
+</br >
+
+## 재시작 제어하기
+
+### 잡의 재시작 방지하기
+
+스프링 배치는 기본적으로 잡이 실패하거나 중지될 때 다시 실행할 수 있었다. 그러나 다시 실행하면 안 되는 잡이 있을 수 있다.
+
+첫 시도에 잘 동작하면 아주 좋은 일이지만 실패하더라도 다시 실행하지 않게 만들 수 있다.
+
+### preventRestart()
+
+`JobBuilder`의 `preventRestart()`를 호출해 잡을 다시 시작할 수 없도록 구성하는 기능을 제공한다.
+
+```java
+@Bean(name = JOB_NAME)
+public Job preventRestartJob() {
+    return this.jobBuilderFactory.get(JOB_NAME)
+            .preventRestart()
+            .start(step1())
+            .build();
+}
+```
+
+</br >
+
+### 재시작 횟수 제한하기
+
+`preventRestart` 메서드를 사용하여 잡을 중지시키는 것 너무 극단적으로 보일 수 있다. 그래서 스프링 배치는 잡 실행 횟수를 지정하도록 구성할 수 있다.
+
+### startLimit()
+
+`startLimit()` 를 호출해 잡의 실행 횟수를 제한할 수 있다.
+
+```java
+@Bean(name = "second" + STEP_NAME)
+public Step step2() {
+    return this.stepBuilderFactory.get("second" + STEP_NAME)
+            .startLimit(2)
+            .tasklet((contribution, chunkContext) -> {
+                return RepeatStatus.FINISHED;
+            }).build();
+}
+```
+
+위 코드는 `startLimit()`의 횟수를 2로 정했다. 첫 실행은 한 번의 시도이므로 이후에는 한 번만의 시도만 더 허용한다.
+
+</br  >
+
+### 완료된 스텝 재실행하기 (allowStartIfComplete
+
+`allowStartIfComplete` 메서드를 사용하여 스텝이 잘 완료됐더라도 다시 실행할 수 있다.
+
+```java
+@Bean(name = "third" + STEP_NAME)
+public Step step3() {
+    return this.stepBuilderFactory.get("third" + STEP_NAME)
+            .allowStartIfComplete(true)
+            .tasklet((contribution, chunkContext) -> {
+                return RepeatStatus.FINISHED;
+            }).build();
+}
+```
 
