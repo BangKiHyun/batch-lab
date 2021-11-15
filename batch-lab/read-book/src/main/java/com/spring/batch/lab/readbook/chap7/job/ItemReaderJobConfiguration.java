@@ -1,6 +1,7 @@
 package com.spring.batch.lab.readbook.chap7.job;
 
 import com.spring.batch.lab.readbook.chap7.mapper.CustomerFieldSetMapper;
+import com.spring.batch.lab.readbook.chap7.mapper.CustomerFileLineTokenizer;
 import com.spring.batch.lab.readbook.chap7.model.AddressCustomer;
 import com.spring.batch.lab.readbook.chap7.model.Customer;
 import lombok.RequiredArgsConstructor;
@@ -98,6 +99,18 @@ public class ItemReaderJobConfiguration {
                         "state",
                         "zipCode")
                 .fieldSetMapper(new CustomerFieldSetMapper())
+                .resource(inputFile)
+                .build();
+    }
+
+    @Bean(name = "tokenizer" + STEP_NAME)
+    @StepScope
+    public FlatFileItemReader<AddressCustomer> tokenizerCustomerItemReader(
+            @Value("#{jobParameters['customerFile']}") Resource inputFile) {
+        return new FlatFileItemReaderBuilder<AddressCustomer>()
+                .name("tokenizer" + STEP_NAME)
+                .lineTokenizer(new CustomerFileLineTokenizer())
+                .targetType(AddressCustomer.class)
                 .resource(inputFile)
                 .build();
     }
