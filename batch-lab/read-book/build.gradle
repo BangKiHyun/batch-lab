@@ -6,6 +6,7 @@ dependencies {
 
     runtimeOnly('mysql:mysql-connector-java')
     compileOnly('org.springframework.boot:spring-boot-starter-jdbc')
+    compileOnly('rog,springframework.boot:spring-boot-starter-data-jpa')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

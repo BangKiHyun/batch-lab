@@ -163,3 +163,97 @@ public SqlPagingQueryProviderFactoryBean pagingQueryProvider(DataSource dataSour
   - 주의할 점으로 이 정렬 키가 ResultSet 내에서 중복되지 않아야 한다.
 - 데이터 소스 참조 설정
 
+</br >
+
+## 하이버네이트로 커서 처리하기
+
+하이버네이트에서 커서를 사용하려면 `sessionFactory`, 매핑 객체, `HibernateCursorItemReader`를 구성해야 한다.
+
+하이버네이트로 커서를 처리하기 위해서 배치 잡에 사용할 TransactionManager를 커스터마이징해야 한다.
+
+스프링 배치에서는 기본으로 DataSourceTransactionManager를 제공한다. 그러나 일반적인 DataSource 커넥션과 하이버네이트 세션을 아우르는 TransactionManager가 필요하다.
+
+~~~java
+@Component
+public class HibernateBatchConfigurer extends DefaultBatchConfigurer {
+
+    private final DataSource dataSource;
+    private final SessionFactory sessionFactory;
+    private final PlatformTransactionManager transactionManager;
+
+    public HibernateBatchConfigurer(DataSource dataSource, EntityManagerFactory entityManagerFactory) {
+        super(dataSource);
+        this.dataSource = dataSource;
+        this.sessionFactory = entityManagerFactory.unwrap(SessionFactory.class);
+        this.transactionManager = new HibernateTransactionManager(this.sessionFactory);
+    }
+
+    @Override
+    public PlatformTransactionManager getTransactionManager() {
+        return this.transactionManager;
+    }
+}
+~~~
+
+`DefaultBatchConfigurer.getTransactionManager()` 메서드를 통해 해당 `HibernateTransactionManager`를 반환하기면 하면 된다.
+
+</br >
+
+### HibernateCursorItemReader
+
+HibernateCursorItemReader는 빌더를 사용해 구성할 수 있다.
+
+해당 리더는 다음으로 구성된다.
+
+- 리더 이름
+- SessionFactory
+- 쿼리 문자열
+- 쿼리에 사용할 파라미터
+
+```java
+@Bean
+@StepScope
+public HibernateCursorItemReader<CustomerJPA> hibernateCursorItemReader(EntityManagerFactory entityManagerFactory,
+                                                                        @Value("#{jobParameters['city']}") String city) {
+    return new HibernateCursorItemReaderBuilder<CustomerJPA>()
+            .name("hibernateCursorItemReader")
+            .sessionFactory(entityManagerFactory.unwrap(SessionFactory.class))
+            .queryString("FROM CustomerJPA WHERE city =: city") //HQL 쿼리
+            .parameterValues(Collections.singletonMap("city", city))
+            .build();
+}
+```
+
+위 예제에서는 HQL 쿼리를 사용해 데이터베이스에 질의했다. 나머지 옵션은 다음과 같다.
+
+| 옵션          | 타입                   | 설명                                                         |
+| ------------- | ---------------------- | ------------------------------------------------------------ |
+| queryName     | String                 | 하이버네이트 구성에 포함된 네임드 하이버네이트 쿼리르 참조   |
+| queryString   | String                 | 스프링 구성에 추가하는 HQL 쿼리                              |
+| queryProvider | HibernateQueryProvider | 하이버네이트 쿼리(HQL)를 프로그래밍으로 빌드하는 기능 제공   |
+| nativeQuery   | String                 | 네이티브 SQL 쿼리를 실행한 뒤 결과를 하이버네이트로 매핑하는 데 사용 |
+
+</br >
+
+## 하이버네이트를 사용해 페이징 기법으로 데이터베이스에 접근하기
+
+### 커서 기법을 사용할 때와 페이징 기법을 사용할 때 차이점
+
+- 잡 구성 클래스에 HibernateItemReader 대신 HibernatePagingItemReader를 명시
+-  ItemReader에서 사용할 페이지 크기를 지정
+
+```java
+@Bean
+@StepScope
+public HibernatePagingItemReader<CustomerJPA> hibernatePagingItemReader(EntityManagerFactory entityManagerFactory,
+                                                                        @Value("#{jobParameters['city']}") String city) {
+    return new HibernatePagingItemReaderBuilder<CustomerJPA>()
+            .name("hibernatePagingItemReader")
+            .sessionFactory(entityManagerFactory.unwrap(SessionFactory.class))
+            .queryString("FROM CustomerJPA WHERE city =: city")
+            .parameterValues(Collections.singletonMap("city", city))
+            .pageSize(10) //크기 지정
+            .build();
+}
+```
+
