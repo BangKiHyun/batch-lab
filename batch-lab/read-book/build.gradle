@@ -19,4 +19,6 @@ dependencies {
     implementation group: 'org.springframework', name: 'spring-context-support', version: '3.1.2.RELEASE'
 
     implementation group: 'org.springframework', name: 'spring-oxm', version: '3.0.0.RELEASE'
+
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '2.4.3'
 }
