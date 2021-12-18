@@ -46,4 +46,121 @@
 - 스프링 배치가 각 아이템을 검증하는 매커니즘 제공
 - BeanValidatingItemProcessor 는 JSR-303을 활용해 유효성 검증을 제공하는 ValidationItemProcessor를 상속한 ItemProcessor
 
+</br >
 
+## ItemProcessorAdapter
+
+`ItemProcessorAdapter`를 사용하여 기존에 존재하던 서비스를 배치 잡 아이템 처리용 프로세서로 재사용할 수 있다.
+
+```java
+@Bean(name = STEP_NAME)
+public Step validatingStep() {
+    return this.stepBuilderFactory.get(STEP_NAME)
+            .<Customer, Customer>chunk(5)
+            .reader(adapterItemReader(null))
+            .processor(itemProcessorAdapter(null))
+            .writer(adapterItemWriter())
+            .build();
+}
+
+@Bean
+public ItemProcessorAdapter<Customer, Customer> itemProcessorAdapter(UpperCaseNameService service) {
+    ItemProcessorAdapter<Customer, Customer> adapter = new ItemProcessorAdapter<>();
+
+    adapter.setTargetObject(service); // 호출 하려는 인스턴스
+    adapter.setTargetMethod("upperCase"); // 해당 인스턴스에서 호출할 메서드
+
+    return adapter;
+}
+```
+
+</br >
+
+## ScriptItemProcessor
+
+- 스크립트는 일반적으로 작성과 수정이 용이해서 자주 변경ㅇ되는 컴포넌트의 경우 스크립트가 큰 유연성을 제공
+- `ScriptItemProcessor`를 사용해 `ItermProcessor`의 입력을 받아들이고 출력 객체를 반환하는 스크립트를 지정할 수 있음
+- `ScriptItemProcessor`는 기본적으로 `ItemProcessor`의 입력을 변수 아이템에 바인딩한다.(변경하고 싶다면 값을 구성할 수 있음)
+- ItemProcessor에 제공할 유일한 의존성은 사용할 스크립트 파일을 가리키는 리소스
+
+```java
+@Bean
+@StepScope
+public ScriptItemProcessor<Customer, Customer> scriptItemProcessor(
+        @Value("#{jobParametersp['script']}") Resource script) {
+    ScriptItemProcessor<Customer, Customer> itemProcessor = new ScriptItemProcessor<>();
+
+    itemProcessor.setScript(script);
+
+    return itemProcessor;
+}
+```
+
+</br >
+
+## CompositeItemProcessor
+
+- `CompositeItemProcessor`는 아아템의 처리를 `ItemProcessor` 구현체 목록에 순서대로 위임하는 `ItemProcssor` 인터페이스 구현체
+- 스텝 내에서 `ItemProcessor`를 체인처럼 연결할 수 있으므로 비지니스 로직 내에서도 동일학 책임분담 할 수 있음
+- 순서대로 ItemProcessor를 호출
+  - 한 ItemProcessor의 처리가 완료되면, 다음 ItemProcessor를 호출하면서 이전 ItemProcessor가 반환한 아이템 전달
+
+```java
+@Bean
+public CompositeItemProcessor<Customer, Customer> compositeItemProcessor() {
+    CompositeItemProcessor<Customer, Customer> itemProcessor = new CompositeItemProcessor<>();
+
+    itemProcessor.setDelegates(Arrays.asList(
+            upperCaseScriptItemProcessor(null),
+            lowerCaseScriptItemProcessor(null)
+    ));
+
+    return itemProcessor;
+}
+```
+
+</br >
+
+## ClassifierCompositeItemProcessor
+
+- 특정 ItemProcessor 특정 아이템을 보내고 싶을때 사용
+- 즉, 아이템 별 ItemProcessor 설정 가능
+
+```java
+public class ZipCodeClassifier implements Classifier<Customer, ItemProcessor<Customer, Customer>> {
+
+    private ItemProcessor<Customer, Customer> oddItemProcessor;
+    private ItemProcessor<Customer, Customer> evenItemProcessor;
+
+    public ZipCodeClassifier(ItemProcessor<Customer, Customer> oddItemProcessor,
+                             ItemProcessor<Customer, Customer> evenItemProcessor) {
+        this.oddItemProcessor = oddItemProcessor;
+        this.evenItemProcessor = evenItemProcessor;
+    }
+
+    @Override
+    public ItemProcessor<Customer, Customer> classify(Customer classifiable) {
+        if (Integer.parseInt(classifiable.getZip()) % 2 == 0) {
+            return evenItemProcessor;
+        }
+        return oddItemProcessor;
+    }
+}
+```
+
+```java
+@Bean
+public Classifier classifier() {
+    return new ZipCodeClassifier(upperCaseScriptItemProcessor(null),
+            lowerCaseScriptItemProcessor(null));
+}
+
+public ClassifierCompositeItemProcessor<Customer, Customer> classifierCompositeItemProcessor() {
+    ClassifierCompositeItemProcessor<Customer, Customer> itemProcessor
+            = new ClassifierCompositeItemProcessor<>();
+    
+    itemProcessor.setClassifier(classifier());
+    
+    return itemProcessor;
+}
+```
