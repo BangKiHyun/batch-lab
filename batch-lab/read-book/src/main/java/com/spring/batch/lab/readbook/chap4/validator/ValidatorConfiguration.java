@@ -5,6 +5,7 @@ import org.springframework.batch.core.job.CompositeJobParametersValidator;
 import org.springframework.batch.core.job.DefaultJobParametersValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.Arrays;
 
@@ -15,7 +16,7 @@ public class ValidatorConfiguration {
     private final ParameterValidator parameterValidator;
 
     @Bean
-    public DefaultJobParametersValidator defaultValidator() {
+    public DefaultJobParametersValidator defaultJobParametersValidator() {
         DefaultJobParametersValidator validator = new DefaultJobParametersValidator();
 
         // 필수 파라미터
@@ -34,11 +35,11 @@ public class ValidatorConfiguration {
     @Bean
     public CompositeJobParametersValidator compositeValidator() {
         final CompositeJobParametersValidator validator = new CompositeJobParametersValidator();
-        defaultValidator().afterPropertiesSet();
+        defaultJobParametersValidator().afterPropertiesSet();
 
         validator.setValidators(
                 Arrays.asList(parameterValidator,
-                        defaultValidator()));
+                        defaultJobParametersValidator()));
         return validator;
     }
 }

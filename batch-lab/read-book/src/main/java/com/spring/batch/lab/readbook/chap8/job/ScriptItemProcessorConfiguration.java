@@ -51,10 +51,11 @@ public class ScriptItemProcessorConfiguration {
     }
 
     @Bean
+    @StepScope
     public ItemReader<Customer> scriptItemReader(
             @Value("#{jobParameters['customerFile']}") Resource inputFile) {
         return new FlatFileItemReaderBuilder<Customer>()
-                .name("customerValidatingItemReader")
+                .name("scriptItemReader")
                 .delimited()
                 .names(new String[]{"firstName",
                         "middleInitial",

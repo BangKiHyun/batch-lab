@@ -44,7 +44,7 @@ public class ApplyTransactionStep {
 
     private final StepBuilderFactory stepBuilderFactory;
 
-    @Bean
+    @Bean(name = "apply_transaction_step")
     public Step applyTransactionStep() {
         return this.stepBuilderFactory.get(APPLY_TRANSACTION_STEP_NAME)
                 .<AccountSummary, AccountSummary>chunk(100)

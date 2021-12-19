@@ -17,6 +17,7 @@ import org.springframework.batch.item.file.transform.Range;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 @Configuration
@@ -49,7 +50,7 @@ public class ItemReaderJobConfiguration {
     @Bean(name = "fixed_length" + STEP_NAME)
     @StepScope
     public FlatFileItemReader<Customer> fixedLengthCustomerItemReader(
-            @Value("#{jobParameters['customerFile']}") Resource inputFile) {
+            @Value("#{jobParameters['customerFile']}") ClassPathResource inputFile) {
         return new FlatFileItemReaderBuilder<Customer>()
                 .name("fixed_length" + STEP_NAME)
                 .resource(inputFile)
@@ -66,7 +67,7 @@ public class ItemReaderJobConfiguration {
     @Bean(name = "delimited" + STEP_NAME)
     @StepScope
     public FlatFileItemReader<Customer> delimitedCustomerItemReader(
-            @Value("#{jobParameters['customerFile']}") Resource inputFile) {
+            @Value("#{jobParameters['customerFile']}") ClassPathResource inputFile) {
         return new FlatFileItemReaderBuilder<Customer>()
                 .name("delimited" + STEP_NAME)
                 .delimited()

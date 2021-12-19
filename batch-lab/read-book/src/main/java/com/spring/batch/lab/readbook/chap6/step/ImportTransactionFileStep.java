@@ -36,7 +36,7 @@ public class ImportTransactionFileStep {
 
     private final StepBuilderFactory stepBuilderFactory;
 
-    @Bean
+    @Bean(name = "import_transaction_file_step")
     public Step importTransactionFileStep() {
         return this.stepBuilderFactory.get(TRANSACTION_STEP_NAME)
                 .<Transaction, Transaction>chunk(100)

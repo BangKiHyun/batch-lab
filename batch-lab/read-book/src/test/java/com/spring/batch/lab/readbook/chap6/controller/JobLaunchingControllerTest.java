@@ -62,7 +62,7 @@ class JobLaunchingControllerTest {
                 .andReturn();
 
         String responseString = mvcResult.getResponse().getContentAsString();
-        ExitStatus actual = objectMapper.readValue(responseString, new TypeReference<>() {
+        ExitStatus actual = objectMapper.readValue(responseString, new TypeReference<ExitStatus>() {
         });
 
         //then

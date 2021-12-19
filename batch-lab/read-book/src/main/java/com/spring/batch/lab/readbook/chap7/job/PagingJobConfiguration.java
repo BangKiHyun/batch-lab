@@ -18,7 +18,6 @@ import org.springframework.batch.item.database.support.SqlPagingQueryProviderFac
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -51,6 +50,7 @@ public class PagingJobConfiguration {
     }
 
     @Bean
+    @StepScope
     public JdbcPagingItemReader<CustomerDB> pagingItemReader(DataSource dataSource,
                                                              PagingQueryProvider queryProvider,
                                                              @Value("#{jobParameters['city']}") String city) {

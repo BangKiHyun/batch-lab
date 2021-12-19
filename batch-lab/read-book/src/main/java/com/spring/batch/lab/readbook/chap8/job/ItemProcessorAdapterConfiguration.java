@@ -7,6 +7,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.adapter.ItemProcessorAdapter;
@@ -44,10 +45,11 @@ public class ItemProcessorAdapterConfiguration {
     }
 
     @Bean
+    @StepScope
     public ItemReader<Customer> adapterItemReader(
             @Value("#{jobParameters['customerFile']}") Resource inputFile) {
         return new FlatFileItemReaderBuilder<Customer>()
-                .name("customerValidatingItemReader")
+                .name("adapterItemReader")
                 .delimited()
                 .names(new String[]{"firstName",
                         "middleInitial",

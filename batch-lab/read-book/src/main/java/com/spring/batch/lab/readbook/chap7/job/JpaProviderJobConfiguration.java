@@ -44,7 +44,7 @@ public class JpaProviderJobConfiguration {
                 .build();
     }
 
-    @Bean
+    @Bean(name = STEP_NAME + "reader")
     @StepScope
     public JpaPagingItemReader<CustomerJPA> customerJpaItemReader(
             EntityManagerFactory entityManagerFactory,
