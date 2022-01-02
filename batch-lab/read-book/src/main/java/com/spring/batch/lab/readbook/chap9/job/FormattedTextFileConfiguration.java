@@ -95,7 +95,9 @@ public class FormattedTextFileConfiguration {
                         "city",
                         "state",
                         "zip"})
+                .shouldDeleteIfEmpty(true) // 아이템이 파일에 써지지 않았으면 스텝 완료시점에 해당 파일 삭제 (default: false)
+                .shouldDeleteIfExists(false) // 출력 파일과 동일한 파일의 이름이 존재하면 해당 파일 삭제 (defualt: true)
+                .append(true) // 출력 파일이 존재하는 경우 기존 파일에 데이터를 추가
                 .build();
     }
-
 }
